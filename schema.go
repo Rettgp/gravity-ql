@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 )
 
@@ -54,15 +55,16 @@ var rootQuery = graphql.NewObject(graphql.ObjectConfig{
 			Type:        recipeType,
 			Description: "Get a single recipe",
 			Args: graphql.FieldConfigArgument{
-				"id": &graphql.ArgumentConfig{
-					Type: graphql.Int,
+				"uuid": &graphql.ArgumentConfig{
+					Type: graphql.String,
 				},
 			},
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-				idQuery, ok := params.Args["id"].(int)
-				if ok {
+				idQuery, ok := params.Args["uuid"].(string)
+				uuid, okUUID := uuid.Parse(idQuery)
+				if ok && okUUID != nil {
 					for _, recipe := range RecipeList {
-						if recipe.ID == idQuery {
+						if recipe.UUID == uuid {
 							return recipe, nil
 						}
 					}
@@ -103,7 +105,6 @@ var rootMutation = graphql.NewObject(graphql.ObjectConfig{
 				cookTime, _ := params.Args["cookTime"].(int)
 				prepTime, _ := params.Args["prepTime"].(int)
 
-				newId := len(RecipeList) + 1
 				currentTime := time.Now()
 
 				newRecipe := Recipe{
@@ -113,7 +114,7 @@ var rootMutation = graphql.NewObject(graphql.ObjectConfig{
 					DescriptionImage: descriptionImage,
 					CookTime:         cookTime,
 					PrepTime:         prepTime,
-					ID:               newId,
+					UUID:             uuid.New(),
 					Created:          currentTime.Format("2006-01-02"),
 				}
 
@@ -127,7 +128,7 @@ var rootMutation = graphql.NewObject(graphql.ObjectConfig{
 			Type:        recipeType,
 			Description: "Update existing recipe",
 			Args: graphql.FieldConfigArgument{
-				"id":               &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.Int)},
+				"uuid":             &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 				"name":             &graphql.ArgumentConfig{Type: graphql.String},
 				"thumbnail":        &graphql.ArgumentConfig{Type: graphql.String},
 				"ingredients":      &graphql.ArgumentConfig{Type: graphql.NewList(graphql.String)},
@@ -136,11 +137,12 @@ var rootMutation = graphql.NewObject(graphql.ObjectConfig{
 				"prepTime":         &graphql.ArgumentConfig{Type: graphql.Int},
 			},
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-				id, _ := params.Args["id"].(int)
+				uuidString, _ := params.Args["uuid"].(string)
 				affectedRecipe := Recipe{}
+				uuid, _ := uuid.Parse(uuidString)
 
 				for i := 0; i < len(RecipeList); i++ {
-					if RecipeList[i].ID == id {
+					if RecipeList[i].UUID == uuid {
 						if _, ok := params.Args["name"]; ok {
 							RecipeList[i].Name = params.Args["name"].(string)
 						}

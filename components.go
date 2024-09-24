@@ -1,13 +1,14 @@
 package main
 
 import (
+	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 )
 
 var recipeType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Recipe",
 	Fields: graphql.Fields{
-		"id":               &graphql.Field{Type: graphql.Int},
+		"uuid":             &graphql.Field{Type: graphql.String},
 		"name":             &graphql.Field{Type: graphql.String},
 		"thumbnail":        &graphql.Field{Type: graphql.String},
 		"ingredients":      &graphql.Field{Type: graphql.NewList(graphql.String)},
@@ -19,12 +20,12 @@ var recipeType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 type Recipe struct {
-	ID               int      `json:"id"`
-	Name             string   `json:"name"`
-	Thumbnail        string   `json:"thumbnail"`
-	Ingredients      []string `json:"ingredients"`
-	DescriptionImage string   `json:"descriptionImage"`
-	CookTime         int      `json:"cookTime"`
-	PrepTime         int      `json:"prepTime"`
-	Created          string   `json:"created"`
+	UUID             uuid.UUID `json:"uuid"`
+	Name             string    `json:"name"`
+	Thumbnail        string    `json:"thumbnail"`
+	Ingredients      []string  `json:"ingredients"`
+	DescriptionImage string    `json:"descriptionImage"`
+	CookTime         int       `json:"cookTime"`
+	PrepTime         int       `json:"prepTime"`
+	Created          string    `json:"created"`
 }
